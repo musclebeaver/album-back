@@ -1,4 +1,4 @@
-package site.musclebeaver.album.demo;
+package site.musclebeaver.album.login;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
