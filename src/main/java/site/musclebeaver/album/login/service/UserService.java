@@ -19,5 +19,6 @@ public class UserService {
     public User save(User user) {
         return userRepository.save(user);
     }
+}
 
 // 추가적인 서비스 메소드 구현
