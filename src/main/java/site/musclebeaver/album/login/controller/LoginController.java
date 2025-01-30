@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import site.musclebeaver.album.login.dto.LoginRequestDto;
 import site.musclebeaver.album.security.CustomUserDetailsService;
+import site.musclebeaver.album.security.util.JwtTokenProvider;
 
 @RestController
 @RequestMapping("/api")
@@ -18,7 +19,8 @@ public class LoginController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    private JwtTokenProvider jwtTokenProvider;
+
 
     // 로그인 처리 API
     @PostMapping("/login")
@@ -34,14 +36,15 @@ public class LoginController {
         // 인증 성공 시 사용자 정보 가져오기
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        // JWT 생성 로직 추가 가능 (여기서는 생략)
-        String jwt = "generated-jwt-token";  // 실제 JWT를 생성하는 로직을 추가해야 함.
+        // JWT 생성
+        String jwt = jwtTokenProvider.generateToken(userDetails.getUsername());
 
         // JWT 토큰을 응답으로 반환
         return ResponseEntity.ok(new JwtResponse(jwt));
     }
 
-    // JWT 응답을 담을 DTO
+
+        // JWT 응답을 담을 DTO
     public static class JwtResponse {
         private String token;
 
