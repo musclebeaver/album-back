@@ -8,6 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import site.musclebeaver.album.login.dto.LoginRequestDto;
+import site.musclebeaver.album.login.entity.UserEntity;
+import site.musclebeaver.album.login.service.UserService;
 import site.musclebeaver.album.security.CustomUserDetailsService;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
 
@@ -18,6 +20,9 @@ public class LoginController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+
+    @Autowired
+    private UserService userService;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
@@ -36,13 +41,22 @@ public class LoginController {
         // 인증 성공 시 사용자 정보 가져오기
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
+        authentication.getPrincipal();
+
+        // 관리자 승인 여부 확인
+        UserEntity userEntity = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!userEntity.isApproved()) {
+            return ResponseEntity.status(403).body("User not approved by admin");
+        }
+
         // JWT 생성
         String jwt = jwtTokenProvider.generateToken(userDetails.getUsername());
 
         // JWT 토큰을 응답으로 반환
         return ResponseEntity.ok(new JwtResponse(jwt));
     }
-
 
         // JWT 응답을 담을 DTO
     public static class JwtResponse {

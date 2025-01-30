@@ -24,4 +24,7 @@ public class UserEntity {
 
     @Column(nullable = false)  // 비밀번호는 필수
     private String password;
+
+    @Column(nullable = false)  // 관리자 승인 여부
+    private boolean isApproved = false;
 }
