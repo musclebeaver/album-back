@@ -6,9 +6,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
-
 
 @Entity
 @EntityListeners(AuditingEntityListener.class) // Auditing 기능 활성화
@@ -17,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Table(name = "photo") // 테이블 이름을 명시적으로 지정 (선택 사항)
+@Table(name = "photo")
 public class Photo {
 
     @Id
@@ -39,4 +37,8 @@ public class Photo {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "folder_id") // 폴더와의 관계
+    private Folder folder;
 }
