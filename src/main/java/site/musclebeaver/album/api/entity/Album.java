@@ -1,9 +1,17 @@
 package site.musclebeaver.album.api.entity;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
+
 @Entity
+@EntityListeners(AuditingEntityListener.class) // Auditing 기능 활성화
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,4 +32,11 @@ public class Photo {
 
     @Column(nullable = false) // 이미지 URL은 null 불가
     private String imageUrl;
+
+    @CreatedDate
+    @Column(updatable = false) // 생성 시간은 업데이트 불가
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }
