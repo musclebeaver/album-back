@@ -25,8 +25,8 @@ public class FolderService {
         return folderRepository.save(folder);
     }
     // 특정 사용자의 폴더 목록 조회
-    public List<Folder> getFoldersByUser(UserEntity user) {
-        return folderRepository.findByUser(user);
+    public List<Folder> getFoldersByUserId(Long userId) {
+        return folderRepository.findByUser_Id(userId);
     }
 
     // 폴더 조회 (ID로)
