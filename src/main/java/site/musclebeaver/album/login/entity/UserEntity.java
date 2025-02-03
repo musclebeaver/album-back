@@ -27,4 +27,7 @@ public class UserEntity {
 
     @Column(nullable = false)  // 관리자 승인 여부
     private boolean isApproved = false;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Folder> folders = new ArrayList<>(); // UserEntity와 Folder의 양방향 관계
 }
