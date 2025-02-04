@@ -1,8 +1,11 @@
 package site.musclebeaver.album.api.repository;
 
-import com.example.photoalbum.entity.Photo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import site.musclebeaver.album.api.entity.Photo;
+
+import java.util.List;
 
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
-    // 추가적인 쿼리 메서드가 필요하면 여기에 정의할 수 있습니다.
+    // 특정 폴더 ID로 사진 리스트 조회
+    List<Photo> findByFolder_Id(Long folderId);
 }

@@ -1,4 +1,8 @@
 # Database Schema
+페도라 서버에 저장된 이미지를 유지하려면 도커 실행 시 볼륨 마운트를 설정해야 합니다
+
+docker run -d -p 8080:8080 -v /img/uploads:/img/uploads --name photo-app spring-photo-app
+
 
 ## 1. users 테이블
 사용자 정보를 저장하는 테이블입니다.

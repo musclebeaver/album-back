@@ -10,14 +10,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/folders")
+@RequiredArgsConstructor
 public class FolderController {
 
-    @Autowired
     private FolderService folderService;
     // 특정 사용자의 폴더 생성
-    @PostMapping
+    @PostMapping("/create")
     public Folder createFolder(@RequestParam String name, @RequestParam Long userId) {
-        // userId를 사용하여 UserEntity를 조회 (예: UserService를 통해)
         UserEntity user = userService.getUserById(userId); // UserService는 별도로 구현 필요
         return folderService.createFolder(name, user);
     }
@@ -32,9 +31,14 @@ public class FolderController {
 
 
     // 폴더 삭제
-    @DeleteMapping("/{id}")
-    public void deleteFolder(@PathVariable Long id) {
-        folderService.deleteFolder(id);
+    @DeleteMapping("/{folderId}")
+    public ResponseEntity<String> deleteFolder(@PathVariable Long folderId) {
+        try {
+            folderService.deleteFolder(folderId);
+            return ResponseEntity.ok("Folder and all photos deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // 폴더 이름 변경

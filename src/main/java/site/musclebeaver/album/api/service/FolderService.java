@@ -1,16 +1,24 @@
 package site.musclebeaver.album.api.service;
 
+import lombok.RequiredArgsConstructor;
 import site.musclebeaver.album.api.entity.Folder;
 import site.musclebeaver.album.api.exception.FolderAlreadyExistsException;
 import site.musclebeaver.album.api.repository.FolderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import site.musclebeaver.album.api.repository.PhotoRepository;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.util.List;
+import java.util.Optional;
+
 @Service
+@RequiredArgsConstructor
 public class FolderService {
 
-    @Autowired
-    private FolderRepository folderRepository;
+    private final FolderRepository folderRepository;
+    private final PhotoRepository photoRepository;
+    // 페도라 서버에 저장할 경로
+    private final String UPLOAD_DIR = "/img/uploads/";
 
     // 폴더 생성 (특정 사용자용)
     public Folder createFolder(String name, UserEntity user) {
@@ -36,7 +44,30 @@ public class FolderService {
 
     // 폴더 삭제
     public void deleteFolder(Long id) {
-        folderRepository.deleteById(id);
+         //  폴더 조회
+        Optional<Folder> folderOpt = folderRepository.findById(folderId);
+        if (folderOpt.isEmpty()) {
+            throw new IllegalArgumentException("Folder not found with id: " + folderId);
+        }
+        Folder folder = folderOpt.get();
+
+        //  해당 폴더 내 모든 사진 조회
+        List<Photo> photos = photoRepository.findByFolder_Id(folderId);
+
+        //  사진 파일 삭제
+        for (Photo photo : photos) {
+            String imagePath = UPLOAD_DIR + photo.getImageUrl().replace("/img/uploads/", ""); // 파일 경로 추출
+            File file = new File(imagePath);
+            if (file.exists()) {
+                file.delete(); // 실제 파일 삭제
+            }
+        }
+
+        // DB에서 해당 폴더의 모든 사진 삭제
+        photoRepository.deleteAll(photos);
+
+        //  폴더 삭제
+        folderRepository.delete(folder);
     }
 
     // 폴더 이름 변경
