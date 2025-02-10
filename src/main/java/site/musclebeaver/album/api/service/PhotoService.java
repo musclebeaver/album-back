@@ -21,7 +21,7 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final FolderRepository folderRepository;
 
-    // 📌페도라 서버에 저장할 경로
+    // 페도라 서버에 저장할 경로
     private final String UPLOAD_DIR = "/img/uploads/";
 
     //  모든 사진 조회
@@ -68,6 +68,42 @@ public class PhotoService {
         photo.setFolder(folder);
 
         return photoRepository.save(photo);
+    }
+     //  대량 사진 업로드 (추가된 로직)
+    public List<Photo> saveMultiplePhotos(Long folderId, List<MultipartFile> files) throws IOException {
+        Folder folder = folderRepository.findById(folderId)
+                .orElseThrow(() -> new IllegalArgumentException("Folder not found"));
+
+        List<Photo> savedPhotos = new ArrayList<>();
+
+        //  저장 경로 확인 및 생성
+        File uploadDir = new File(UPLOAD_DIR);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue; // 빈 파일 건너뛰기
+
+            //  파일 저장
+            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            String filePath = UPLOAD_DIR + fileName;
+            file.transferTo(new File(filePath));
+
+            //  저장된 파일 URL 설정
+            String imageUrl = "/img/uploads/" + fileName;
+
+            //  Photo 엔티티 생성 및 저장
+            Photo photo = new Photo();
+            photo.setTitle(file.getOriginalFilename()); // 기본적으로 파일명을 제목으로 설정
+            photo.setDescription("Uploaded via bulk upload");
+            photo.setImageUrl(imageUrl);
+            photo.setFolder(folder);
+
+            savedPhotos.add(photoRepository.save(photo));
+        }
+
+        return savedPhotos;
     }
 
     //  사진 삭제

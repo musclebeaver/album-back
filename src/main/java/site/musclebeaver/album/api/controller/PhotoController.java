@@ -31,6 +31,21 @@ public class PhotoController {
             return ResponseEntity.internalServerError().body(null);
         }
     }
+    // ✅ 대량 사진 업로드
+    @PostMapping("/upload/multiple")
+    public ResponseEntity<List<Photo>> uploadMultiplePhotos(
+            @RequestParam Long folderId,
+            @RequestParam List<MultipartFile> files) {
+        try {
+            if (files.isEmpty()) {
+                return ResponseEntity.badRequest().body(null);
+            }
+            List<Photo> photos = photoService.saveMultiplePhotos(folderId, files);
+            return ResponseEntity.ok(photos);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+    }
 
     // 📌 특정 폴더의 모든 사진 조회
     @GetMapping("/folder/{folderId}")
