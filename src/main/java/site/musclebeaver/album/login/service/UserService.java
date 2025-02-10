@@ -32,6 +32,13 @@ public class UserService {
 
     }
 
+    // 사용자 ID로 사용자 조회 (추가)
+    public UserEntity getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+    }
+
+
     // 사용자 이름으로 사용자 찾기
     public Optional<UserEntity> findByUsername(String username) {
         return userRepository.findByUsername(username);

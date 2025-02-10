@@ -17,7 +17,7 @@ public class PhotoController {
 
     private final PhotoService photoService;
 
-    // 📌 사진 업로드 (페도라 서버에 저장)
+    // 사진 업로드 (페도라 서버에 저장)
     @PostMapping("/upload")
     public ResponseEntity<Photo> uploadPhoto(
             @RequestParam String title,
@@ -31,7 +31,7 @@ public class PhotoController {
             return ResponseEntity.internalServerError().body(null);
         }
     }
-    // ✅ 대량 사진 업로드
+    //  대량 사진 업로드
     @PostMapping("/upload/multiple")
     public ResponseEntity<List<Photo>> uploadMultiplePhotos(
             @RequestParam Long folderId,
@@ -47,26 +47,26 @@ public class PhotoController {
         }
     }
 
-    // 📌 특정 폴더의 모든 사진 조회
+    //  특정 폴더의 모든 사진 조회
     @GetMapping("/folder/{folderId}")
     public ResponseEntity<List<Photo>> getPhotosByFolderId(@PathVariable Long folderId) {
         List<Photo> photos = photoService.getPhotosByFolderId(folderId);
         return ResponseEntity.ok(photos);
     }
 
-    // 📌 모든 사진 조회
+    //  모든 사진 조회
     @GetMapping("/all")
     public ResponseEntity<List<Photo>> getAllPhotos() {
         return ResponseEntity.ok(photoService.getAllPhotos());
     }
 
-    // 📌 특정 사진 조회
+    //  특정 사진 조회
     @GetMapping("/{id}")
     public ResponseEntity<Photo> getPhotoById(@PathVariable Long id) {
         return ResponseEntity.ok(photoService.getPhotoById(id));
     }
 
-    // 📌 사진 삭제
+    //  사진 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePhoto(@PathVariable Long id) {
         try {

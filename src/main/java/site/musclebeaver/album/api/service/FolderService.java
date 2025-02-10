@@ -2,10 +2,12 @@ package site.musclebeaver.album.api.service;
 
 import lombok.RequiredArgsConstructor;
 import site.musclebeaver.album.api.entity.Folder;
+import site.musclebeaver.album.api.entity.Photo;
 import site.musclebeaver.album.api.exception.FolderAlreadyExistsException;
 import site.musclebeaver.album.api.repository.FolderRepository;
 import site.musclebeaver.album.api.repository.PhotoRepository;
 import org.springframework.stereotype.Service;
+import site.musclebeaver.album.login.entity.UserEntity;
 
 import java.io.File;
 import java.util.List;
@@ -37,13 +39,16 @@ public class FolderService {
         return folderRepository.findByUser_Id(userId);
     }
 
+    public List<Folder> getFoldersByUser(UserEntity user) {
+        return folderRepository.findByUser(user);
+    }
     // 폴더 조회 (ID로)
     public Folder getFolderById(Long id) {
         return folderRepository.findById(id).orElse(null);
     }
 
     // 폴더 삭제
-    public void deleteFolder(Long id) {
+    public void deleteFolder(Long folderId) {
          //  폴더 조회
         Optional<Folder> folderOpt = folderRepository.findById(folderId);
         if (folderOpt.isEmpty()) {
@@ -75,11 +80,12 @@ public class FolderService {
         Folder folder = folderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Folder not found"));
 
-        if (folderRepository.existsByName(newName)) {
-            throw new FolderAlreadyExistsException("Folder name already exists");
+        if (folderRepository.existsByNameAndUser(newName, folder.getUser())) {
+            throw new FolderAlreadyExistsException("Folder name already exists for this user.");
         }
 
         folder.setName(newName);
         return folderRepository.save(folder);
     }
+
 }
