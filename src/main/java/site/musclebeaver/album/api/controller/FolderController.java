@@ -1,12 +1,16 @@
 package site.musclebeaver.album.api.controller;
 
+import lombok.RequiredArgsConstructor;
 import site.musclebeaver.album.api.entity.Folder;
 import site.musclebeaver.album.api.exception.FolderAlreadyExistsException;
 import site.musclebeaver.album.api.service.FolderService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import site.musclebeaver.album.login.entity.UserEntity;
+import site.musclebeaver.album.login.service.UserService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/folders")
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class FolderController {
 
     private FolderService folderService;
+    private UserService userService;
     // 특정 사용자의 폴더 생성
     @PostMapping("/create")
     public Folder createFolder(@RequestParam String name, @RequestParam Long userId) {
