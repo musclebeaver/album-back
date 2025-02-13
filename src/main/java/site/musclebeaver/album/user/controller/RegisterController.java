@@ -1,11 +1,11 @@
-package site.musclebeaver.album.login.controller;
+package site.musclebeaver.album.user.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import site.musclebeaver.album.login.dto.SignUpRequestDto;
-import site.musclebeaver.album.login.entity.UserEntity;
-import site.musclebeaver.album.login.service.UserService;
+import site.musclebeaver.album.user.dto.SignUpRequestDto;
+import site.musclebeaver.album.user.entity.UserEntity;
+import site.musclebeaver.album.user.service.UserService;
 
 @RestController
 @RequestMapping("/api")

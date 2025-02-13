@@ -7,8 +7,8 @@ import site.musclebeaver.album.api.service.FolderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import site.musclebeaver.album.login.entity.UserEntity;
-import site.musclebeaver.album.login.service.UserService;
+import site.musclebeaver.album.user.entity.UserEntity;
+import site.musclebeaver.album.user.service.UserService;
 
 import java.util.List;
 

@@ -1,3 +1,5 @@
+package site.musclebeaver.album.security;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +17,8 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import site.musclebeaver.album.security.filter.JwtAuthenticationFilter;
 import site.musclebeaver.album.security.filter.JwtAuthorizationFilter;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity

@@ -1,4 +1,4 @@
-package site.musclebeaver.album.login.entity;
+package site.musclebeaver.album.user.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

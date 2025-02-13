@@ -10,7 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import site.musclebeaver.album.login.dto.LoginRequestDto;
+import site.musclebeaver.album.user.dto.LoginRequestDto;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

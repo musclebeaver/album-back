@@ -2,7 +2,7 @@ package site.musclebeaver.album.api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import site.musclebeaver.album.login.entity.UserEntity; // UserEntity import 추가
+import site.musclebeaver.album.user.entity.UserEntity; // UserEntity import 추가
 import java.util.ArrayList;
 import java.util.List;
 

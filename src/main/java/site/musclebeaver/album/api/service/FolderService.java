@@ -7,7 +7,7 @@ import site.musclebeaver.album.api.exception.FolderAlreadyExistsException;
 import site.musclebeaver.album.api.repository.FolderRepository;
 import site.musclebeaver.album.api.repository.PhotoRepository;
 import org.springframework.stereotype.Service;
-import site.musclebeaver.album.login.entity.UserEntity;
+import site.musclebeaver.album.user.entity.UserEntity;
 
 import java.io.File;
 import java.util.List;
