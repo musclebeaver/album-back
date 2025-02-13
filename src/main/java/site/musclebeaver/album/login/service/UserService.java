@@ -58,4 +58,10 @@ public class UserService {
         return userRepository.save(user);
 
     }
+
+        // ✅ username 중복 확인 메서드 추가
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
 }

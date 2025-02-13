@@ -20,4 +20,14 @@ public class RegisterController {
         UserEntity newUser = userService.registerUser(signUpRequest);
         return ResponseEntity.ok(newUser);
     }
+
+        // ✅ username 중복 확인 API
+    @GetMapping("/checkusername")
+    public ResponseEntity<?> checkUsername(@RequestParam String username) {
+        boolean isTaken = userService.existsByUsername(username);
+        if (isTaken) {
+            return ResponseEntity.badRequest().body("Username is already taken");
+        }
+        return ResponseEntity.ok("Username is available");
+    }
 }
