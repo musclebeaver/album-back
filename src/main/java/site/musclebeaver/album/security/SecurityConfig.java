@@ -48,19 +48,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager(new AuthenticationConfiguration()), jwtTokenProvider);
-        JwtAuthorizationFilter jwtAuthorizationFilter = new JwtAuthorizationFilter("/api/**", jwtTokenProvider, userDetailsService);
+        JwtAuthorizationFilter jwtAuthorizationFilter = new JwtAuthorizationFilter(jwtTokenProvider, userDetailsService);
 
         http
                 .csrf(csrf -> csrf.disable()) //  CSRF 비활성화
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) //  CORS 활성화
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/folders/test").permitAll()
                         .requestMatchers("/login", "/register").permitAll()
                         .anyRequest().authenticated()
                 )
-                // 🔹 UsernamePasswordAuthenticationFilter 이전에 JWT 필터 추가
-                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+            // ✅ 순서 조정
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthorizationFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 

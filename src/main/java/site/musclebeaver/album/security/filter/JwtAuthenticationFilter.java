@@ -42,9 +42,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                            FilterChain chain, Authentication authResult) throws IOException {
         UserDetails userDetails = (UserDetails) authResult.getPrincipal();
         String jwtToken = jwtTokenProvider.generateToken(userDetails.getUsername());
+
         response.setHeader("Authorization", "Bearer " + jwtToken);
+
+        // ✅ JSON 응답 추가
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"token\": \"" + jwtToken + "\"}");
     }
 }

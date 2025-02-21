@@ -19,6 +19,13 @@ public class FolderController {
 
     private FolderService folderService;
     private UserService userService;
+
+    // 테스트용 엔드포인트 추가
+    @GetMapping("/test")
+    public ResponseEntity<String> testEndpoint() {
+        return ResponseEntity.ok("Success");
+    }
+
     // 특정 사용자의 폴더 생성
     @PostMapping("/create")
     public Folder createFolder(@RequestParam String name, @RequestParam Long userId) {
