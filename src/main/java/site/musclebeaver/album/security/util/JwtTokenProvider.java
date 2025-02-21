@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
@@ -16,6 +17,15 @@ public class JwtTokenProvider {
     private final long EXPIRATION_TIME = 86400000L;  // 1일 (단위: 밀리초)
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+        System.out.println(" JWT Secret Key: " + secretKey);  // 디버깅 출력
+
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalArgumentException(" JWT Secret Key is missing or empty! Check application.properties");
+        }
+
+
+
+
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
     // ✅ JWT 토큰 생성
