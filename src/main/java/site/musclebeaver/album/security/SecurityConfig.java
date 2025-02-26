@@ -55,7 +55,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) //  CORS 활성화
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/folders/test").permitAll()
-                        .requestMatchers("/login", "/register").permitAll()
+                        .requestMatchers("/api/login", "/api/register","/api/checkusername","/api/checkemail").permitAll()
                         .anyRequest().authenticated()
                 )
             // ✅ 순서 조정

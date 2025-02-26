@@ -64,4 +64,9 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
+    // ✅ email 중복 확인 메서드 추가
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
 }
