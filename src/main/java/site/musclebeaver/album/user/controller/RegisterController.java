@@ -30,4 +30,14 @@ public class RegisterController {
         }
         return ResponseEntity.ok("Username is available");
     }
+
+    // ✅ email 중복 확인 API 추가
+    @GetMapping("/checkemail")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        boolean isTaken = userService.existsByEmail(email);
+        if (isTaken) {
+            return ResponseEntity.badRequest().body("Email is already in use");
+        }
+        return ResponseEntity.ok("Email is available");
+    }
 }
