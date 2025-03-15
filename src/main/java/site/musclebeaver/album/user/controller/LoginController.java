@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import site.musclebeaver.album.user.dto.LoginRequestDto;
+import site.musclebeaver.album.user.dto.JwtResponse; // ✅ 추가
 import site.musclebeaver.album.user.entity.UserEntity;
 import site.musclebeaver.album.user.service.UserService;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
@@ -25,7 +26,7 @@ public class LoginController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    // ✅ 로그인 처리 API (JWT 발급)
+    // ✅ 로그인 처리 API (JWT + userId 반환)
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequestDto loginRequest) {
         // 1️⃣ 로그인 시도
@@ -47,21 +48,8 @@ public class LoginController {
             return ResponseEntity.status(403).body("User not approved by admin");
         }
 
-        // 4️⃣ JWT 생성 후 응답 반환
+        // 4️⃣ JWT 생성 후 응답 반환 (userId 포함)
         String jwt = jwtTokenProvider.generateToken(userDetails.getUsername());
-        return ResponseEntity.ok(new JwtResponse(jwt));
-    }
-
-    // ✅ JWT 응답 DTO (토큰 반환)
-    public static class JwtResponse {
-        private final String token;
-
-        public JwtResponse(String token) {
-            this.token = token;
-        }
-
-        public String getToken() {
-            return token;
-        }
+        return ResponseEntity.ok(new JwtResponse(jwt, userEntity.getId()));
     }
 }
