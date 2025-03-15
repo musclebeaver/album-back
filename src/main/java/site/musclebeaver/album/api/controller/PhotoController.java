@@ -54,18 +54,6 @@ public class PhotoController {
         return ResponseEntity.ok(photos);
     }
 
-    //  모든 사진 조회
-    @GetMapping("/all")
-    public ResponseEntity<List<Photo>> getAllPhotos() {
-        return ResponseEntity.ok(photoService.getAllPhotos());
-    }
-
-    //  특정 사진 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<Photo> getPhotoById(@PathVariable Long id) {
-        return ResponseEntity.ok(photoService.getPhotoById(id));
-    }
-
     //  사진 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePhoto(@PathVariable Long id) {
