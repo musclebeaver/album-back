@@ -1,7 +1,7 @@
 package site.musclebeaver.album.user.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import site.musclebeaver.album.user.dto.SignUpRequestDto;
 import site.musclebeaver.album.user.entity.UserEntity;
@@ -16,8 +16,9 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    // ✅ 이렇게 바꿔야 함
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     // 모든 사용자 조회
     public List<UserEntity> findAll() {
@@ -67,6 +68,16 @@ public class UserService {
     // ✅ email 중복 확인 메서드 추가
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    public void increaseFailedLoginCount(UserEntity user) {
+        user.setFailedLoginCount(user.getFailedLoginCount() + 1);
+        userRepository.save(user);
+    }
+
+    public void resetFailedLoginCount(UserEntity user) {
+        user.setFailedLoginCount(0);
+        userRepository.save(user);
     }
 
 }

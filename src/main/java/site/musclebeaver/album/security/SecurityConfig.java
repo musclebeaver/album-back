@@ -59,8 +59,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
             // ✅ 순서 조정
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(jwtAuthorizationFilter, JwtAuthenticationFilter.class);
+//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterAfter(jwtAuthorizationFilter, JwtAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter, JwtAuthorizationFilter.class);
         return http.build();
     }
 

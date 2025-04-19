@@ -21,7 +21,6 @@ configurations {
 
 repositories {
 	mavenCentral()
-	jcenter()  // JCenter 저장소 추가
 }
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -33,7 +32,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'javax.servlet:javax.servlet-api:4.0.1'  // javax.servlet 의존성 추가
+//	implementation 'javax.servlet:javax.servlet-api:4.0.1'  // javax.servlet 의존성 추가
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'  // JWT API
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'  // JWT 구현
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'  // Jackson 지원

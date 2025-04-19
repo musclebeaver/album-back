@@ -17,14 +17,11 @@ public class JwtTokenProvider {
     private final long EXPIRATION_TIME = 86400000L;  // 1일 (단위: 밀리초)
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
-        System.out.println(" JWT Secret Key: " + secretKey);  // 디버깅 출력
+//        System.out.println(" JWT Secret Key: " + secretKey);  // 디버깅 출력
 
         if (secretKey == null || secretKey.isBlank()) {
             throw new IllegalArgumentException(" JWT Secret Key is missing or empty! Check application.properties");
         }
-
-
-
 
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
@@ -53,9 +50,18 @@ public class JwtTokenProvider {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
+        } catch (ExpiredJwtException e) {
+            System.out.println("❌ JWT 만료됨: " + e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            System.out.println("❌ 지원되지 않는 JWT: " + e.getMessage());
+        } catch (MalformedJwtException e) {
+            System.out.println("❌ 잘못된 형식의 JWT: " + e.getMessage());
+        } catch (SignatureException e) {
+            System.out.println("❌ 서명 검증 실패: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ 잘못된 인자: " + e.getMessage());
         }
+        return false;
     }
 
     // ✅ HTTP 요청에서 JWT 추출

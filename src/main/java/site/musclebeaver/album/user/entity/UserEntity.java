@@ -34,4 +34,10 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Folder> folders = new ArrayList<>(); // UserEntity와 Folder의 양방향 관계
+
+    @Column(nullable = false)
+    private int failedLoginCount = 0;
+
+    @Column(nullable = false)
+    private boolean isAdmin = false;
 }

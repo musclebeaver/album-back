@@ -88,4 +88,17 @@ public class FolderService {
         return folderRepository.save(folder);
     }
 
+    //소유자 검증 메서드
+    public Folder getFolderIfOwnedByUser(Long folderId, UserEntity user) {
+        Folder folder = folderRepository.findById(folderId)
+                .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+
+        if (!folder.getUser().getId().equals(user.getId())) {
+            throw new SecurityException("해당 폴더에 대한 권한이 없습니다.");
+        }
+
+        return folder;
+    }
+
+
 }

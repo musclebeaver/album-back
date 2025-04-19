@@ -2,11 +2,15 @@ package site.musclebeaver.album.user.dto;
 
 public class JwtResponse {
     private String token;
-    private Long userId; // ✅ 사용자 ID 추가
+    private Long userId;
+    private boolean approved;
+    private boolean isAdmin; // ✅ 관리자 여부
 
-    public JwtResponse(String token, Long userId) {
+    public JwtResponse(String token, Long userId, boolean approved, boolean isAdmin) {
         this.token = token;
         this.userId = userId;
+        this.approved = approved;
+        this.isAdmin = isAdmin;
     }
 
     public String getToken() {
@@ -15,5 +19,13 @@ public class JwtResponse {
 
     public Long getUserId() {
         return userId;
+    }
+
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
     }
 }
