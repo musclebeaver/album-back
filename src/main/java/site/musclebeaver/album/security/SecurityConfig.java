@@ -2,6 +2,7 @@ package site.musclebeaver.album.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -54,15 +55,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) //  CSRF 비활성화
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) //  CORS 활성화
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // ✅ OPTIONS 요청 모두 허용 추가!
                         .requestMatchers("/folders/test").permitAll()
                         .requestMatchers("/api/login", "/api/register","/api/checkusername","/api/checkemail").permitAll()
                         .anyRequest().authenticated()
                 )
-            // ✅ 순서 조정
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterAfter(jwtAuthorizationFilter, JwtAuthenticationFilter.class);
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(jwtAuthenticationFilter, JwtAuthorizationFilter.class);
+                .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

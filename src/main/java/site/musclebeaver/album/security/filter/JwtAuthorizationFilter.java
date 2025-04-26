@@ -29,26 +29,36 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = getJwtFromRequest(request);
 
-        System.out.println("JWT 필터 동작");
-        System.out.println("Authorization 헤더: " + request.getHeader("Authorization"));
-        System.out.println("파싱된 토큰: " + token);
+        // ✅ 토큰 추출 직후 로그 추가
+        System.out.println("🛡️ [JWT 인증] 요청 URL: " + request.getRequestURI());
+        System.out.println("🛡️ [JWT 인증] Authorization 헤더: " + request.getHeader("Authorization"));
+        System.out.println("🛡️ [JWT 인증] 파싱된 토큰: " + token);
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            System.out.println("토큰 유효 ");
-            String username = jwtTokenProvider.getUsernameFromToken(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (token != null) {
+            if (jwtTokenProvider.validateToken(token)) {
+                System.out.println("✅ 토큰 유효성 검사 통과");
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            System.out.println("Authentication: " + SecurityContextHolder.getContext().getAuthentication());
+                String username = jwtTokenProvider.getUsernameFromToken(token);
+                System.out.println("✅ 토큰에서 추출한 사용자 이름: " + username);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }else {
-            System.out.println("토큰 유효하지 않음 ");
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                filterChain.doFilter(request, response);
+            } else {
+                System.out.println("❌ 토큰 유효성 검사 실패 - 403 리턴");
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Invalid or expired token.");
+                return;
+            }
+        } else {
+            System.out.println("❌ Authorization 헤더 없음 - 비회원 접근");
+            filterChain.doFilter(request, response);
         }
-
-        filterChain.doFilter(request, response);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
