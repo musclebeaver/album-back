@@ -79,5 +79,16 @@ public class UserService {
         user.setFailedLoginCount(0);
         userRepository.save(user);
     }
+    // ✅ RefreshToken 저장
+    public void updateRefreshToken(String username, String refreshToken) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            user.setRefreshToken(refreshToken);
+            userRepository.save(user);
+        });
+    }
 
+    // ✅ RefreshToken으로 사용자 조회
+    public Optional<UserEntity> findByRefreshToken(String refreshToken) {
+        return userRepository.findByRefreshToken(refreshToken);
+    }
 }

@@ -69,10 +69,11 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // React 프론트엔드 주소 허용
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // React URL
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // 클라이언트에서 쿠키 전달 허용
+        configuration.setExposedHeaders(List.of("Authorization")); // ✅ Authorization 헤더를 클라이언트에서 읽을 수 있도록 추가!
+        configuration.setAllowCredentials(true); // ✅ 이거 true로 해야 쿠키/토큰 전달 가능
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

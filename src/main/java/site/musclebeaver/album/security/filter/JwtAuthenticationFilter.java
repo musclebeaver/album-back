@@ -1,5 +1,6 @@
 package site.musclebeaver.album.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,11 +11,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import site.musclebeaver.album.user.dto.LoginRequestDto;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import site.musclebeaver.album.user.dto.LoginRequestDto;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -43,15 +45,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain chain, Authentication authResult) throws IOException {
+                                            FilterChain chain, Authentication authResult) throws IOException, ServletException {
         UserDetails userDetails = (UserDetails) authResult.getPrincipal();
-        String jwtToken = jwtTokenProvider.generateToken(userDetails.getUsername());
+        String username = userDetails.getUsername();
 
-        response.setHeader("Authorization", "Bearer " + jwtToken);
+        // ✅ AccessToken, RefreshToken 각각 생성
+        String accessToken = jwtTokenProvider.generateAccessToken(username);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(username);
 
-        // ✅ JSON 응답 추가
+        // ✅ JSON으로 응답 보내기
+        Map<String, Object> tokenResponse = new HashMap<>();
+        tokenResponse.put("accessToken", accessToken);
+        tokenResponse.put("refreshToken", refreshToken);
+        tokenResponse.put("userId", username); // username 또는 userId 필요하면 추가
+
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"token\": \"" + jwtToken + "\"}");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(tokenResponse));
     }
 }

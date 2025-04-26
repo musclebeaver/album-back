@@ -17,27 +17,31 @@ import java.util.List;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // 자동 증가 ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)  // 사용자명은 고유해야 함
+    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)  // 이메일도 고유해야 함
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)  // 비밀번호는 필수
+    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)  // 관리자 승인 여부
+    @Column(nullable = false)
     private boolean isApproved = false;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Folder> folders = new ArrayList<>(); // UserEntity와 Folder의 양방향 관계
+    private List<Folder> folders = new ArrayList<>();
 
     @Column(nullable = false)
     private int failedLoginCount = 0;
 
     @Column(nullable = false)
     private boolean isAdmin = false;
+
+    // ✅ Refresh Token 추가
+    @Column(name = "refresh_token")
+    private String refreshToken;
 }

@@ -8,11 +8,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import site.musclebeaver.album.user.dto.LoginRequestDto;
-import site.musclebeaver.album.user.dto.JwtResponse; // ✅ 추가
 import site.musclebeaver.album.user.entity.UserEntity;
 import site.musclebeaver.album.user.service.UserService;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -28,7 +29,7 @@ public class LoginController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    // ✅ 로그인 처리 API (JWT + userId 반환)
+    // ✅ 로그인 처리 API (Access + Refresh 발급)
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequestDto loginRequest) {
         try {
@@ -50,10 +51,22 @@ public class LoginController {
             // 로그인 성공 → 실패 카운트 초기화
             userService.resetFailedLoginCount(userEntity);
 
-            String jwt = jwtTokenProvider.generateToken(userDetails.getUsername());
-            return ResponseEntity.ok(
-                    new JwtResponse(jwt, userEntity.getId(), userEntity.isApproved(), userEntity.isAdmin())
-            );
+            // ✅ AccessToken + RefreshToken 발급
+            String accessToken = jwtTokenProvider.generateAccessToken(userDetails.getUsername());
+            String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails.getUsername());
+
+            // ✅ RefreshToken DB에 저장
+            userService.updateRefreshToken(userDetails.getUsername(), refreshToken);
+
+            // ✅ 응답 JSON 구성
+            Map<String, Object> response = new HashMap<>();
+            response.put("accessToken", accessToken);
+            response.put("refreshToken", refreshToken);
+            response.put("userId", userEntity.getId());
+            response.put("approved", userEntity.isApproved());
+            response.put("isAdmin", userEntity.isAdmin());
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception ex) {
             // 실패한 사용자 이름이 DB에 있으면 카운트 증가
