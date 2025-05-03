@@ -45,41 +45,46 @@ public class LoginController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if (!userEntity.isApproved()) {
-                return ResponseEntity.status(403).body("NOT_APPROVED");
+                // ✅ 200 OK + success: false로
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("error", "NOT_APPROVED");
+                return ResponseEntity.ok(errorResponse);
             }
 
-            // 로그인 성공 → 실패 카운트 초기화
             userService.resetFailedLoginCount(userEntity);
 
-            // ✅ AccessToken + RefreshToken 발급
             String accessToken = jwtTokenProvider.generateAccessToken(userDetails.getUsername());
             String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails.getUsername());
-
-            // ✅ RefreshToken DB에 저장
             userService.updateRefreshToken(userDetails.getUsername(), refreshToken);
 
-            // ✅ 응답 JSON 구성
-            Map<String, Object> response = new HashMap<>();
-            response.put("accessToken", accessToken);
-            response.put("refreshToken", refreshToken);
-            response.put("userId", userEntity.getId());
-            response.put("approved", userEntity.isApproved());
-            response.put("isAdmin", userEntity.isAdmin());
+            Map<String, Object> successResponse = new HashMap<>();
+            successResponse.put("success", true);
+            successResponse.put("accessToken", accessToken);
+            successResponse.put("refreshToken", refreshToken);
+            successResponse.put("userId", userEntity.getId());
+            successResponse.put("approved", userEntity.isApproved());
+            successResponse.put("isAdmin", userEntity.isAdmin());
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(successResponse);
 
         } catch (Exception ex) {
-            // 실패한 사용자 이름이 DB에 있으면 카운트 증가
-            userService.findByUsername(loginRequest.getUsername()).ifPresent(user -> {
-                userService.increaseFailedLoginCount(user);
-            });
+            // 로그인 실패 처리 (비밀번호 틀림 등)
+            userService.findByUsername(loginRequest.getUsername()).ifPresent(userService::increaseFailedLoginCount);
 
             Optional<UserEntity> userOpt = userService.findByUsername(loginRequest.getUsername());
             if (userOpt.isPresent() && userOpt.get().getFailedLoginCount() >= 5) {
-                return ResponseEntity.status(403).body("TOO_MANY_FAILED_ATTEMPTS");
+                Map<String, Object> tooManyAttemptsResponse = new HashMap<>();
+                tooManyAttemptsResponse.put("success", false);
+                tooManyAttemptsResponse.put("error", "TOO_MANY_FAILED_ATTEMPTS");
+                return ResponseEntity.ok(tooManyAttemptsResponse);
             }
 
-            return ResponseEntity.status(401).body("INVALID_CREDENTIALS");
+            Map<String, Object> invalidCredentialsResponse = new HashMap<>();
+            invalidCredentialsResponse.put("success", false);
+            invalidCredentialsResponse.put("error", "INVALID_CREDENTIALS");
+            return ResponseEntity.ok(invalidCredentialsResponse);
         }
     }
+
 }

@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // ✅ OPTIONS 요청 모두 허용 추가!
                         .requestMatchers("/folders/test").permitAll()
-                        .requestMatchers("/api/login", "/api/register","/api/checkusername","/api/checkemail").permitAll()
+                        .requestMatchers("/api/login", "/api/register","/api/checkusername","/api/checkemail","/api/refresh").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)

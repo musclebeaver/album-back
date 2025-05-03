@@ -29,10 +29,6 @@ public class FolderController {
         this.folderService = folderService;
         this.userService = userService;
 
-        // ✅ 주입된 객체가 null인지 확인하는 로그 추가
-//        System.out.println("FolderController 생성됨!");
-//        System.out.println("UserService: " + (userService != null ? "OK" : "NULL"));
-//        System.out.println("FolderService: " + (folderService != null ? "OK" : "NULL"));
     }
 
     // 테스트용 엔드포인트 추가
