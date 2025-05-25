@@ -1,4 +1,4 @@
-package site.musclebeaver.album.api.exception;
+package site.musclebeaver.album.exception;
 
 public class FolderAlreadyExistsException extends RuntimeException {
 

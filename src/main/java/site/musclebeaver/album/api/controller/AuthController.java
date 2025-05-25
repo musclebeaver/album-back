@@ -1,5 +1,6 @@
 package site.musclebeaver.album.api.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
@@ -46,5 +47,21 @@ public class AuthController {
                     errorResponse.put("error", "Invalid Refresh Token");
                     return ResponseEntity.status(401).body(errorResponse);
                 });
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
+
+        return userService.findByRefreshToken(refreshToken)
+                .map(user -> {
+                    user.setRefreshToken(null); // ✅ refreshToken 무효화
+                    userService.save(user);
+                    return ResponseEntity.ok("로그아웃 성공");
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자를 찾을 수 없습니다."));
     }
 }

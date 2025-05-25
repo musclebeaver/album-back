@@ -1,12 +1,11 @@
 package site.musclebeaver.album.api.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import site.musclebeaver.album.api.dto.FolderRequestDto;
 import site.musclebeaver.album.api.dto.FolderResponseDto;
 import site.musclebeaver.album.api.entity.Folder;
-import site.musclebeaver.album.api.exception.FolderAlreadyExistsException;
+import site.musclebeaver.album.exception.FolderAlreadyExistsException;
 import site.musclebeaver.album.api.service.FolderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,13 +50,21 @@ public class FolderController {
     }
     // 특정 사용자의 폴더 생성
     @PostMapping("/create")
-    public Folder createFolder(@RequestBody FolderRequestDto request, Authentication authentication) {
-        System.out.println("폴더 생성 요청 받음"); // 로그 확인용
+    public ResponseEntity<?> createFolder(@RequestBody FolderRequestDto request, Authentication authentication) {
+        System.out.println("▶ 폴더 생성 진입");
+
         String username = authentication.getName();
+        System.out.println("▶ username: " + username);
+
+        String folderName = request.getName();
+        System.out.println("▶ folderName: " + folderName);
+
         UserEntity user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
-        return folderService.createFolder(request.getName(), user);
+
+        Folder folder = folderService.createFolder(request.getName(), user);
+        return ResponseEntity.ok(new FolderResponseDto(folder)); // ✅ DTO로 변환
     }
     // 특정 사용자의 폴더 목록 조회
     @GetMapping("/user/{userId}")

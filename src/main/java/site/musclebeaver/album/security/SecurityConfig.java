@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/folders/test").permitAll()
-                        .requestMatchers("/api/login", "/api/register", "/api/checkusername", "/api/checkemail", "/api/refresh").permitAll()
+                        .requestMatchers("/api/login", "/api/register", "/api/checkusername", "/api/checkemail", "/api/refresh", "/api/logout").permitAll()
                         .anyRequest().authenticated()
                 )
                 // ✅ 여기에 추가

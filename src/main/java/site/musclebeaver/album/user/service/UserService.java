@@ -91,4 +91,5 @@ public class UserService {
     public Optional<UserEntity> findByRefreshToken(String refreshToken) {
         return userRepository.findByRefreshToken(refreshToken);
     }
+
 }

@@ -3,7 +3,7 @@ package site.musclebeaver.album.api.service;
 import lombok.RequiredArgsConstructor;
 import site.musclebeaver.album.api.entity.Folder;
 import site.musclebeaver.album.api.entity.Photo;
-import site.musclebeaver.album.api.exception.FolderAlreadyExistsException;
+import site.musclebeaver.album.exception.FolderAlreadyExistsException;
 import site.musclebeaver.album.api.repository.FolderRepository;
 import site.musclebeaver.album.api.repository.PhotoRepository;
 import org.springframework.stereotype.Service;
