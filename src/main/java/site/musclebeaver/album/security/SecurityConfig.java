@@ -1,5 +1,6 @@
 package site.musclebeaver.album.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -52,19 +53,32 @@ public class SecurityConfig {
         JwtAuthorizationFilter jwtAuthorizationFilter = new JwtAuthorizationFilter(jwtTokenProvider, userDetailsService);
 
         http
-                .csrf(csrf -> csrf.disable()) //  CSRF 비활성화
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) //  CORS 활성화
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // ✅ OPTIONS 요청 모두 허용 추가!
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/folders/test").permitAll()
-                        .requestMatchers("/api/login", "/api/register","/api/checkusername","/api/checkemail","/api/refresh").permitAll()
+                        .requestMatchers("/api/login", "/api/register", "/api/checkusername", "/api/checkemail", "/api/refresh").permitAll()
                         .anyRequest().authenticated()
+                )
+                // ✅ 여기에 추가
+                .exceptionHandling(e -> e
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"message\": \"접근 권한이 없습니다.\"}");
+                        })
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"message\": \"인증되지 않은 요청입니다.\"}");
+                        })
                 )
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
-
     //  CORS 설정 메서드 추가
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {

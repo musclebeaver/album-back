@@ -81,16 +81,17 @@ public class FolderController {
         return ResponseEntity.ok("폴더 및 사진이 성공적으로 삭제되었습니다.");
     }
     // 폴더 이름 변경
+
     @PutMapping("/{id}/name")
     public Folder updateFolderName(@PathVariable Long id,
-                                   @RequestParam String newName,
+                                   @RequestBody FolderRequestDto dto,
                                    Authentication authentication) {
         String username = authentication.getName();
         UserEntity user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
         Folder folder = folderService.getFolderIfOwnedByUser(id, user);
-        return folderService.updateFolderName(folder.getId(), newName);
+        return folderService.updateFolderName(folder.getId(), dto.getName());
     }
     // 이미 존재하는 폴더 예외 처리
     @ExceptionHandler(FolderAlreadyExistsException.class)
