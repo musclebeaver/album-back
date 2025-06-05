@@ -65,6 +65,16 @@ public class AdminUserController {
         return ResponseEntity.ok().build();
     }
 
+    // ✅ 검색 API 추가
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(@RequestParam String keyword,
+                                         Authentication authentication) {
+        verifyAdmin(authentication);
+        List<UserEntity> users = adminUserService.searchUsers(keyword);
+        return ResponseEntity.ok(users);
+    }
+
+
     /** ✅ 관리자 권한 체크 */
     private void verifyAdmin(Authentication authentication) {
         String username = authentication.getName();
