@@ -1,15 +1,17 @@
 package site.musclebeaver.album.api.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserUpdateRequestDto {
+public class UserResponseDto {
+    private Long id;
     private String username;
     private String email;
     private boolean isApproved;
     private boolean isAdmin;
+    private int failedLoginCount;
 }

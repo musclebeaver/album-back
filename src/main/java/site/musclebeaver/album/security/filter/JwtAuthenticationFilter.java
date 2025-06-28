@@ -12,7 +12,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
-import site.musclebeaver.album.user.dto.LoginRequestDto;
+import site.musclebeaver.album.api.dto.LoginRequestDto;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -5,8 +5,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import site.musclebeaver.album.user.entity.UserEntity;
-import site.musclebeaver.album.user.repository.UserRepository;
+import site.musclebeaver.album.api.entity.UserEntity;
+import site.musclebeaver.album.api.repository.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

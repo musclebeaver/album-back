@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import site.musclebeaver.album.api.entity.Photo;
 import site.musclebeaver.album.api.service.PhotoService;
-import site.musclebeaver.album.user.entity.UserEntity;
+import site.musclebeaver.album.api.entity.UserEntity;
 
 import java.io.IOException;
 import java.util.List;

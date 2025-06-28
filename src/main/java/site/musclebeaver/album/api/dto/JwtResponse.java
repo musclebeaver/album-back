@@ -1,4 +1,4 @@
-package site.musclebeaver.album.user.dto;
+package site.musclebeaver.album.api.dto;
 
 public class JwtResponse {
     private String token;

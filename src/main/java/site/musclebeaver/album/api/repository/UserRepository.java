@@ -1,7 +1,7 @@
-package site.musclebeaver.album.user.repository;
+package site.musclebeaver.album.api.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import site.musclebeaver.album.user.entity.UserEntity;
+import site.musclebeaver.album.api.entity.UserEntity;
 
 import java.util.Optional;
 

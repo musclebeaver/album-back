@@ -8,7 +8,7 @@ import site.musclebeaver.album.api.entity.Folder;
 import site.musclebeaver.album.api.entity.Photo;
 import site.musclebeaver.album.api.repository.FolderRepository;
 import site.musclebeaver.album.api.repository.PhotoRepository;
-import site.musclebeaver.album.user.entity.UserEntity;
+import site.musclebeaver.album.api.entity.UserEntity;
 
 import java.io.File;
 import java.io.IOException;

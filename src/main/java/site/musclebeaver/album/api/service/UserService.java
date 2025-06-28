@@ -1,11 +1,11 @@
-package site.musclebeaver.album.user.service;
+package site.musclebeaver.album.api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import site.musclebeaver.album.user.dto.SignUpRequestDto;
-import site.musclebeaver.album.user.entity.UserEntity;
-import site.musclebeaver.album.user.repository.UserRepository;
+import site.musclebeaver.album.api.dto.SignUpRequestDto;
+import site.musclebeaver.album.api.entity.UserEntity;
+import site.musclebeaver.album.api.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;

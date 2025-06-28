@@ -1,4 +1,4 @@
-package site.musclebeaver.album.user.controller;
+package site.musclebeaver.album.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -7,9 +7,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import site.musclebeaver.album.user.dto.LoginRequestDto;
-import site.musclebeaver.album.user.entity.UserEntity;
-import site.musclebeaver.album.user.service.UserService;
+import site.musclebeaver.album.api.dto.LoginRequestDto;
+import site.musclebeaver.album.api.entity.UserEntity;
+import site.musclebeaver.album.api.service.UserService;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
 
 import java.util.HashMap;

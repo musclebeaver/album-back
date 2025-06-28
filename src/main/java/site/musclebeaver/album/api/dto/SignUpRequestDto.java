@@ -1,14 +1,12 @@
-package site.musclebeaver.album.user.dto;
+package site.musclebeaver.album.api.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginRequestDto {
-
+public class SignUpRequestDto {
     private String username;
+    private String email;
     private String password;
-
-    // Getters and Setters
 }
