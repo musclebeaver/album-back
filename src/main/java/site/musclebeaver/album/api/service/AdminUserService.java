@@ -50,10 +50,23 @@ public class AdminUserService {
         UserEntity user = adminUserRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
 
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setApproved(request.isApproved());
-        user.setAdmin(request.isAdmin());
+        // 필요한 필드만 갱신
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
+        }
+        if (request.getIsApproved() != null) {
+            user.setApproved(request.getIsApproved());
+        }
+        if (request.getIsAdmin() != null) {
+            user.setAdmin(request.getIsAdmin());
+        }
+        // ✅ Password는 건드리지 않음
     }
     @Transactional
     public void deleteUser(Long userId) {

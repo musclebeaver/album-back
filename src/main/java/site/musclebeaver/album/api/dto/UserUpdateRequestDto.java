@@ -3,13 +3,13 @@ package site.musclebeaver.album.api.dto;
 import lombok.*;
 
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserUpdateRequestDto {
     private String username;
     private String email;
-    private boolean isApproved;
-    private boolean isAdmin;
+    private String nickname;
+    private Boolean enabled;
+    private Boolean isApproved;
+    private Boolean isAdmin;
 }
