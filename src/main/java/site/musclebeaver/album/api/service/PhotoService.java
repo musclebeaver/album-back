@@ -42,7 +42,7 @@ public class PhotoService {
     }
 
     // ✅ 사진 업로드 (단건)
-    public Photo savePhoto(String title, String description, Long folderId, MultipartFile file, UserEntity user) throws IOException {
+public Photo savePhoto(String title, String description, Long folderId, MultipartFile file, UserEntity user) throws IOException {
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("Folder not found"));
 
@@ -50,16 +50,17 @@ public class PhotoService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        // 사용자별 디렉토리
-        File userDir = new File(uploadDir + File.separator + user.getId());
-        if (!userDir.exists()) userDir.mkdirs();
+        // 유저ID/폴더ID 디렉토리 생성
+        File folderDir = new File(uploadDir + File.separator + user.getId() + File.separator + folder.getId());
+        if (!folderDir.exists()) folderDir.mkdirs();
 
+        // 파일명 생성
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        String filePath = userDir.getPath() + File.separator + fileName;
+        String filePath = folderDir.getPath() + File.separator + fileName;
         file.transferTo(new File(filePath));
 
-        // 사용자별 접근 경로
-        String imageUrl = accessUrl + user.getId() + "/" + fileName;
+        // 접근 URL
+        String imageUrl = accessUrl + user.getId() + "/" + folder.getId() + "/" + fileName;
 
         Photo photo = new Photo();
         photo.setTitle(title);
@@ -79,18 +80,19 @@ public class PhotoService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        File userDir = new File(uploadDir + File.separator + user.getId());
-        if (!userDir.exists()) userDir.mkdirs();
+        // 유저ID/폴더ID 디렉토리 생성
+        File folderDir = new File(uploadDir + File.separator + user.getId() + File.separator + folder.getId());
+        if (!folderDir.exists()) folderDir.mkdirs();
 
         List<Photo> savedPhotos = new ArrayList<>();
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
 
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            String filePath = userDir.getPath() + File.separator + fileName;
+            String filePath = folderDir.getPath() + File.separator + fileName;
             file.transferTo(new File(filePath));
 
-            String imageUrl = accessUrl + user.getId() + "/" + fileName;
+            String imageUrl = accessUrl + user.getId() + "/" + folder.getId() + "/" + fileName;
 
             Photo photo = new Photo();
             photo.setTitle(file.getOriginalFilename());
@@ -113,7 +115,7 @@ public class PhotoService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        // 이미지 경로에서 userId 포함된 상대 경로 추출
+        // 이미지 경로에서 accessUrl 제거
         String relativePath = photo.getImageUrl().replace(accessUrl, "");
         File file = new File(uploadDir + File.separator + relativePath);
 

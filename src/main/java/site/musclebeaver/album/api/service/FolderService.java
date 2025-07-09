@@ -20,11 +20,11 @@ public class FolderService {
     private final FolderRepository folderRepository;
     private final PhotoRepository photoRepository;
     // 페도라 서버에 저장할 경로
-    private final String UPLOAD_DIR = "/img/uploads/";
+    @Value("${album.upload-dir}")
+    private String uploadDir;
 
-    // 폴더 생성 (특정 사용자용)
+    // 폴더 생성
     public Folder createFolder(String name, UserEntity user) {
-        // 동일한 사용자 내에서 폴더 이름 중복 검사
         if (folderRepository.existsByNameAndUser(name, user)) {
             throw new FolderAlreadyExistsException("Folder name already exists for this user");
         }
@@ -32,7 +32,19 @@ public class FolderService {
         Folder folder = new Folder();
         folder.setName(name);
         folder.setUser(user);
-        return folderRepository.save(folder);
+        Folder savedFolder = folderRepository.save(folder);
+
+        // 물리 디렉토리 생성
+        String dirPath = uploadDir + user.getId() + "/" + savedFolder.getId();
+        File directory = new File(dirPath);
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            if (!created) {
+                throw new RuntimeException("폴더 디렉토리 생성 실패: " + dirPath);
+            }
+        }
+
+        return savedFolder;
     }
     // 특정 사용자의 폴더 목록 조회
     public List<Folder> getFoldersByUserId(Long userId) {
