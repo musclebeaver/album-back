@@ -6,9 +6,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import site.musclebeaver.album.api.dto.FolderRequestDto;
 import site.musclebeaver.album.api.service.AdminFolderService;
 import site.musclebeaver.album.api.service.UserService;
 import site.musclebeaver.album.api.entity.UserEntity;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/folders")
@@ -29,10 +32,10 @@ public class AdminFolderController {
 
     @PutMapping("/{folderId}/name")
     public ResponseEntity<?> updateFolderName(@PathVariable Long folderId,
-                                              @RequestParam String name,
+                                              @RequestBody FolderRequestDto request,
                                               Authentication authentication) {
         verifyAdmin(authentication);
-        adminFolderService.updateFolderName(folderId, name);
+        adminFolderService.updateFolderName(folderId, request.getName());
         return ResponseEntity.ok().build();
     }
 

@@ -8,6 +8,7 @@ import site.musclebeaver.album.api.repository.FolderRepository;
 import site.musclebeaver.album.api.repository.PhotoRepository;
 import org.springframework.stereotype.Service;
 import site.musclebeaver.album.api.entity.UserEntity;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.util.List;
@@ -73,7 +74,7 @@ public class FolderService {
 
         //  사진 파일 삭제
         for (Photo photo : photos) {
-            String imagePath = UPLOAD_DIR + photo.getImageUrl().replace("/img/uploads/", ""); // 파일 경로 추출
+            String imagePath = uploadDir + photo.getImageUrl().replace("/img/uploads/", ""); // 파일 경로 추출
             File file = new File(imagePath);
             if (file.exists()) {
                 file.delete(); // 실제 파일 삭제
