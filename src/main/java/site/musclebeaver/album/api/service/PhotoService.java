@@ -4,11 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import site.musclebeaver.album.api.entity.Folder;
 import site.musclebeaver.album.api.entity.Photo;
 import site.musclebeaver.album.api.repository.FolderRepository;
 import site.musclebeaver.album.api.repository.PhotoRepository;
 import site.musclebeaver.album.api.entity.UserEntity;
+import net.coobird.thumbnailator.Thumbnails;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +35,7 @@ public class PhotoService {
     private String accessUrl;
 
     // ✅ 폴더의 사진 조회 (소유자 확인)
-    public List<Photo> getPhotosByFolderId(Long folderId, UserEntity user) {
+    public Page<Photo> getPhotosByFolderId(Long folderId, UserEntity user, Pageable pageable) {
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("Folder not found"));
 
@@ -38,11 +43,11 @@ public class PhotoService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        return photoRepository.findByFolder_Id(folderId);
+        return photoRepository.findByFolderAndUser(folder, user, pageable);
     }
 
     // ✅ 사진 업로드 (단건)
-public Photo savePhoto(String title, String description, Long folderId, MultipartFile file, UserEntity user) throws IOException {
+    public Photo savePhoto(String title, String description, Long folderId, MultipartFile file, UserEntity user) throws IOException {
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("Folder not found"));
 
@@ -71,7 +76,9 @@ public Photo savePhoto(String title, String description, Long folderId, Multipar
         return photoRepository.save(photo);
     }
 
-    // ✅ 사진 업로드 (다건)
+
+
+    // ✅ 사진 업로드 (다건) - 유효성 검사 추가
     public List<Photo> saveMultiplePhotos(Long folderId, List<MultipartFile> files, UserEntity user) throws IOException {
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("Folder not found"));
@@ -80,23 +87,41 @@ public Photo savePhoto(String title, String description, Long folderId, Multipar
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        // 유저ID/폴더ID 디렉토리 생성
         File folderDir = new File(uploadDir + File.separator + user.getId() + File.separator + folder.getId());
         if (!folderDir.exists()) folderDir.mkdirs();
 
         List<Photo> savedPhotos = new ArrayList<>();
+
         for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
+            // ✅ 유효성 검사 (확장자 + MIME + 비어있는지)
+            if (!isValidImageFile(file)) {
+                throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다: " + file.getOriginalFilename());
+            }
 
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            String filePath = folderDir.getPath() + File.separator + fileName;
-            file.transferTo(new File(filePath));
+            // ✅ 용량 제한: 5MB 초과 금지
+            if (file.getSize() > (5 * 1024 * 1024)) {
+                throw new IllegalArgumentException("5MB 이하 파일만 업로드 가능합니다: " + file.getOriginalFilename());
+            }
 
-            String imageUrl = accessUrl + user.getId() + "/" + folder.getId() + "/" + fileName;
+            // ✅ 저장 파일명 및 경로
+            String originalName = file.getOriginalFilename();
+            String newFileName = UUID.randomUUID() + "_" + originalName;
+            String filePath = folderDir.getPath() + File.separator + newFileName;
 
+            // ✅ 리사이징: 1024x1024 이하로 축소
+            BufferedImage originalImage = ImageIO.read(file.getInputStream());
+            Thumbnails.of(originalImage)
+                    .size(1024, 1024)
+                    .outputFormat("jpg") // 원본 형식 유지하려면 확장자 추출해서 처리
+                    .toFile(filePath);
+
+            // ✅ 이미지 접근 URL 구성
+            String imageUrl = accessUrl + user.getId() + "/" + folder.getId() + "/" + newFileName;
+
+            // ✅ DB 저장
             Photo photo = new Photo();
-            photo.setTitle(file.getOriginalFilename());
-            photo.setDescription("Uploaded via bulk upload");
+            photo.setTitle(originalName);
+            photo.setDescription("Resized on upload");
             photo.setImageUrl(imageUrl);
             photo.setFolder(folder);
 
@@ -124,5 +149,22 @@ public Photo savePhoto(String title, String description, Long folderId, Multipar
         }
 
         photoRepository.deleteById(id);
+    }
+
+    private boolean isValidImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) return false;
+
+        String originalName = file.getOriginalFilename();
+        String contentType = file.getContentType();
+
+        // 허용 확장자
+        boolean hasValidExtension = originalName != null &&
+                originalName.toLowerCase().matches(".*\\.(jpg|jpeg|png|gif|bmp|webp)$");
+
+        // 허용 MIME 타입
+        boolean hasValidMimeType = contentType != null &&
+                contentType.toLowerCase().matches("image/(jpeg|png|gif|bmp|webp)");
+
+        return hasValidExtension && hasValidMimeType;
     }
 }

@@ -30,16 +30,16 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         String token = getJwtFromRequest(request);
 
         // ✅ 토큰 추출 직후 로그 추가
-        System.out.println("🛡️ [JWT 인증] 요청 URL: " + request.getRequestURI());
-        System.out.println("🛡️ [JWT 인증] Authorization 헤더: " + request.getHeader("Authorization"));
-        System.out.println("🛡️ [JWT 인증] 파싱된 토큰: " + token);
+//        System.out.println("🛡️ [JWT 인증] 요청 URL: " + request.getRequestURI());
+//        System.out.println("🛡️ [JWT 인증] Authorization 헤더: " + request.getHeader("Authorization"));
+//        System.out.println("🛡️ [JWT 인증] 파싱된 토큰: " + token);
 
         if (token != null) {
             if (jwtTokenProvider.validateToken(token)) {
-                System.out.println("✅ 토큰 유효성 검사 통과");
+//                System.out.println("✅ 토큰 유효성 검사 통과");
 
                 String username = jwtTokenProvider.getUsernameFromToken(token);
-                System.out.println("✅ 토큰에서 추출한 사용자 이름: " + username);
+//                System.out.println("✅ 토큰에서 추출한 사용자 이름: " + username);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -50,13 +50,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
                 filterChain.doFilter(request, response);
             } else {
-                System.out.println("❌ 토큰 유효성 검사 실패 - 403 리턴");
+//                System.out.println("❌ 토큰 유효성 검사 실패 - 403 리턴");
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.getWriter().write("Invalid or expired token.");
                 return;
             }
         } else {
-            System.out.println("❌ Authorization 헤더 없음 - 비회원 접근");
+//            System.out.println("❌ Authorization 헤더 없음 - 비회원 접근");
             filterChain.doFilter(request, response);
         }
     }

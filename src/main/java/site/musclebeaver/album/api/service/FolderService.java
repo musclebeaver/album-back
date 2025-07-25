@@ -70,7 +70,7 @@ public class FolderService {
         Folder folder = folderOpt.get();
 
         //  해당 폴더 내 모든 사진 조회
-        List<Photo> photos = photoRepository.findByFolder_Id(folderId);
+        List<Photo> photos = photoRepository.findByFolderId(folderId);
 
         //  사진 파일 삭제
         for (Photo photo : photos) {

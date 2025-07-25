@@ -17,14 +17,21 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) {
-        // UserEntity 객체를 데이터베이스에서 조회
-        UserEntity userEntity = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+//    @Override
+//    public UserDetails loadUserByUsername(String username) {
+//        // UserEntity 객체를 데이터베이스에서 조회
+//        UserEntity userEntity = userRepository.findByUsername(username)
+//                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+//
+//        // UserEntity 객체를 User(Spring Security User)로 변환
+//        return new User(userEntity.getUsername(), userEntity.getPassword(),
+//                java.util.Collections.singletonList(() -> "ROLE_USER"));
+//    }
+        @Override
+        public UserDetails loadUserByUsername(String username) {
+            UserEntity userEntity = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
 
-        // UserEntity 객체를 User(Spring Security User)로 변환
-        return new User(userEntity.getUsername(), userEntity.getPassword(),
-                java.util.Collections.singletonList(() -> "ROLE_USER"));
-    }
+            return new CustomUserDetails(userEntity);
+        }
 }
