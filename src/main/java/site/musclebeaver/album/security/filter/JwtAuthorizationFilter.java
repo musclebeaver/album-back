@@ -27,6 +27,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/img/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = getJwtFromRequest(request);
 
         // ✅ 토큰 추출 직후 로그 추가

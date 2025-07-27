@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/img/uploads/**").permitAll()
+                        .requestMatchers("/img/**").permitAll()
                         .requestMatchers("/api/login", "/api/register", "/api/checkusername", "/api/checkemail", "/api/refresh", "/api/logout").permitAll()
                         .anyRequest().authenticated()
                 )

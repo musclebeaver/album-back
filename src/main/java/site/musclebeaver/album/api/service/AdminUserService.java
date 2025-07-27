@@ -1,8 +1,10 @@
 package site.musclebeaver.album.api.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.musclebeaver.album.api.dto.UserResponseDto;
@@ -15,6 +17,8 @@ import site.musclebeaver.album.api.entity.UserEntity;
 public class AdminUserService {
 
     private final AdminUserRepository adminUserRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getPagedUsers(Pageable pageable, String searchType, String keyword) {
@@ -77,7 +81,9 @@ public class AdminUserService {
     public void resetPassword(Long userId) {
         UserEntity user = adminUserRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
-        user.setPassword("초기비밀번호");
+
+        String initialPassword = "123456";
+        user.setPassword(passwordEncoder.encode(initialPassword)); // ✅ 암호화
     }
 
     @Transactional

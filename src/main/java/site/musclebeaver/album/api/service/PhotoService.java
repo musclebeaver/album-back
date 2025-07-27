@@ -43,9 +43,8 @@ public class PhotoService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        return photoRepository.findByFolderAndUser(folder, user, pageable);
+        return photoRepository.findByFolderAndFolderUser(folder, user, pageable); // ✅ 메서드명 변경
     }
-
     // ✅ 사진 업로드 (단건)
     public Photo savePhoto(String title, String description, Long folderId, MultipartFile file, UserEntity user) throws IOException {
         Folder folder = folderRepository.findById(folderId)
@@ -103,9 +102,12 @@ public class PhotoService {
                 throw new IllegalArgumentException("5MB 이하 파일만 업로드 가능합니다: " + file.getOriginalFilename());
             }
 
-            // ✅ 저장 파일명 및 경로
-            String originalName = file.getOriginalFilename();
-            String newFileName = UUID.randomUUID() + "_" + originalName;
+            // ✅ 확장자 제거
+            String originalName = file.getOriginalFilename(); // 예: image.png
+            String baseName = originalName != null ? originalName.substring(0, originalName.lastIndexOf(".")) : "image";
+            String uuid = UUID.randomUUID().toString();
+            String newFileName = uuid + "_" + baseName + ".jpg"; // ✅ 확장자 강제 .jpg
+
             String filePath = folderDir.getPath() + File.separator + newFileName;
 
             // ✅ 리사이징: 1024x1024 이하로 축소
@@ -136,20 +138,30 @@ public class PhotoService {
         Photo photo = photoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found with id: " + id));
 
+        // 소유자 검증
         if (!photo.getFolder().getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        // 이미지 경로에서 accessUrl 제거
-        String relativePath = photo.getImageUrl().replace(accessUrl, "");
-        File file = new File(uploadDir + File.separator + relativePath);
+        // ✅ 물리적 파일 경로 계산
+        String imageUrl = photo.getImageUrl(); // 예: http://localhost:8081/img/11/43/xxx.jpg
+        String relativePath = imageUrl.replace(accessUrl, ""); // 예: 11/43/xxx.jpg
+        File file = new File(uploadDir, relativePath); // uploadDir + 11/43/xxx.jpg
 
-        if (file.exists()) {
-            file.delete();
+        // ✅ 실제 파일 존재 시 삭제
+        if (file.exists() && file.isFile()) {
+            boolean deleted = file.delete();
+            if (!deleted) {
+                System.err.println("❌ 파일 삭제 실패: " + file.getAbsolutePath());
+            }
+        } else {
+            System.err.println("⚠️ 파일이 존재하지 않음: " + file.getAbsolutePath());
         }
 
+        // ✅ DB에서 레코드 삭제
         photoRepository.deleteById(id);
     }
+
 
     private boolean isValidImageFile(MultipartFile file) {
         if (file == null || file.isEmpty()) return false;

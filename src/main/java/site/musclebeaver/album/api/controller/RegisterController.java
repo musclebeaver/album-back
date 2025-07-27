@@ -17,6 +17,7 @@ public class RegisterController {
     // 회원가입 처리 API
     @PostMapping("/register")
     public ResponseEntity<UserEntity> registerUser(@RequestBody SignUpRequestDto signUpRequest) {
+        System.out.println("👉 수신된 요청: " + signUpRequest);
         UserEntity newUser = userService.registerUser(signUpRequest);
         return ResponseEntity.ok(newUser);
     }

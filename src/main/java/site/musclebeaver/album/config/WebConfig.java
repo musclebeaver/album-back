@@ -11,10 +11,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${album.upload-dir}")
     private String uploadDir;
 
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry
-                .addResourceHandler("/img/uploads/**")
-                .addResourceLocations("file:" + uploadDir); // 예: file:/C:/album/uploads/
+                .addResourceHandler("/img/**")
+                .addResourceLocations("file:///" + uploadDir); // <-- 이거 꼭 끝에 슬래시 포함
     }
 }
