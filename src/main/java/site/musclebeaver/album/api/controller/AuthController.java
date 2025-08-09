@@ -2,7 +2,12 @@ package site.musclebeaver.album.api.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import site.musclebeaver.album.api.dto.ChangePasswordRequestDto;
+import site.musclebeaver.album.api.dto.UserResponseDto;
+import site.musclebeaver.album.api.entity.UserEntity;
+import site.musclebeaver.album.security.CustomUserDetails;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
 import site.musclebeaver.album.api.service.UserService;
 
@@ -47,20 +52,52 @@ public class AuthController {
                     return ResponseEntity.status(401).body(errorResponse);
                 });
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserEntity user = userService.getUserById(userDetails.getId());
+        UserResponseDto dto = new UserResponseDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.isApproved(),
+                user.isAdmin(),
+                user.getFailedLoginCount()
+        );
+
+        return ResponseEntity.ok(dto);
+    }
+
+
+    // ✅ 비밀번호 변경
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody ChangePasswordRequestDto request
+    ) {
+        try {
+            userService.changePassword(userDetails.getId(), request.getCurrentPassword(), request.getNewPassword());
+            return ResponseEntity.ok("비밀번호가 변경되었습니다.");
+        } catch (IllegalArgumentException e) {
+            // 현재 비밀번호 불일치, 유효성 실패 등
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 변경 중 오류가 발생했습니다.");
+        }
+    }
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
 
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
+        // refreshToken 검증
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
         }
 
-        return userService.findByRefreshToken(refreshToken)
-                .map(user -> {
-                    user.setRefreshToken(null); // ✅ refreshToken 무효화
-                    userService.save(user);
-                    return ResponseEntity.ok("로그아웃 성공");
-                })
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자를 찾을 수 없습니다."));
+        // refresh token 무효화
+        userService.invalidateRefreshToken(refreshToken);
+
+        return ResponseEntity.ok("로그아웃 성공");
     }
+
 }

@@ -3,6 +3,7 @@ package site.musclebeaver.album.api.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import site.musclebeaver.album.api.dto.SignUpRequestDto;
 import site.musclebeaver.album.api.entity.UserEntity;
 import site.musclebeaver.album.api.repository.UserRepository;
@@ -90,6 +91,45 @@ public class UserService {
     // ✅ RefreshToken으로 사용자 조회
     public Optional<UserEntity> findByRefreshToken(String refreshToken) {
         return userRepository.findByRefreshToken(refreshToken);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 현재 비밀번호 검증
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 간단 유효성 검사 (원하면 더 강화 가능)
+//        if (newPassword == null || newPassword.length() < 6) {
+//            throw new IllegalArgumentException("새 비밀번호는 6자 이상이어야 합니다.");
+//        }
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new IllegalArgumentException("새 비밀번호가 기존 비밀번호와 동일합니다.");
+        }
+        // 공백 방지 처리 (선택)
+        String trimmedNewPw = newPassword.trim();
+
+        // 새 비밀번호 암호화 후 저장
+        String encoded = passwordEncoder.encode(trimmedNewPw);
+        user.setPassword(encoded);
+        user.setRefreshToken(null); // ✅ 변경 시 토큰 무효화
+        userRepository.save(user);
+
+        // ✅ 디버그: 저장된 해시와 새 비밀번호 매칭 검사
+        boolean matchAfterSave = passwordEncoder.matches(trimmedNewPw, user.getPassword());
+        System.out.println("[CHANGE PW DEBUG] userId=" + userId
+                + ", newPwRaw=" + trimmedNewPw
+                + ", matchAfterSave=" + matchAfterSave);
+    }
+
+    @Transactional
+    public void invalidateRefreshToken(String refreshToken) {
+        userRepository.findByRefreshToken(refreshToken)
+                .ifPresent(user -> user.setRefreshToken(null));
     }
 
 }

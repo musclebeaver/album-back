@@ -11,6 +11,7 @@ import site.musclebeaver.album.api.dto.LoginRequestDto;
 import site.musclebeaver.album.api.entity.UserEntity;
 import site.musclebeaver.album.api.service.UserService;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,17 +29,29 @@ public class LoginController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    @Autowired private PasswordEncoder passwordEncoder; // ✅ 주입
+
+
 
     // ✅ 로그인 처리 API (Access + Refresh 발급)
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequestDto loginRequest) {
         try {
+
+            // ✅ 공백 방지
+            final String username = loginRequest.getUsername() == null ? "" : loginRequest.getUsername().trim();
+            final String rawPw    = loginRequest.getPassword() == null ? "" : loginRequest.getPassword().trim();
+
+            // ✅ 임시: 수동 매칭 검사 (디버깅용)
+            userService.findByUsername(username).ifPresent(u -> {
+                boolean m = passwordEncoder.matches(rawPw, u.getPassword());
+                System.out.println("[LOGIN DEBUG] username=" + u.getUsername() + ", manualMatches=" + m);
+            });
+
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(),
-                            loginRequest.getPassword()
-                    )
+                    new UsernamePasswordAuthenticationToken(username, rawPw)
             );
+
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             UserEntity userEntity = userService.findByUsername(userDetails.getUsername())

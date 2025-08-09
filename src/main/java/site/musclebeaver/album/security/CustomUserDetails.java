@@ -1,11 +1,14 @@
 package site.musclebeaver.album.security;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import site.musclebeaver.album.api.entity.UserEntity;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -19,9 +22,22 @@ public class CustomUserDetails implements UserDetails {
         return user;
     }
 
+    // ✅ ID 가져오기
+    public Long getId() {
+        return user.getId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(() -> "ROLE_USER");
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        // 모든 사용자 공통 권한
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+
+        // 관리자면 ADMIN 권한 추가
+        if (user.isAdmin()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
+        return authorities;
     }
 
     @Override
