@@ -4,9 +4,9 @@ server.port=8081
 
 spring.output.ansi.enabled=ALWAYS
 
-spring.datasource.url=${SPRING_DATASOURCE_URL}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+spring.datasource.url=jdbc:mysql://192.168.35.100:3306/album_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+spring.datasource.username=album
+spring.datasource.password=myalbum1!
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 spring.jpa.hibernate.ddl-auto=update
@@ -27,11 +27,11 @@ spring.web.resources.add-mappings=true
 #album.access-url=/img/
 
 ##prod
-album.upload-dir=${ALBUM_UPLOAD_DIR}
-spring.web.resources.static-locations=file:${ALBUM_UPLOAD_DIR}/
-album.access-url=/img/
-jwt.secret=${JWT_SECRET}
+album.upload-dir=/img/uploads/
+spring.web.resources.static-locations=file:/img/uploads/
+album.access-url=/img/uploads/
 
+jwt.secret=aPz9MvL7TxYqW1KJhZdVfNyWpRsYBcCmBtGnQxL8
 #upload file size
 spring.servlet.multipart.max-file-size=5MB
 spring.servlet.multipart.max-request-size=20MB

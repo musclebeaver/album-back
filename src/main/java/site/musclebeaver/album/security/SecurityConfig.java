@@ -95,7 +95,12 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // React URL
+        configuration.setAllowedOrigins(List.of(
+                "https://album.musclebeaver.site",
+                "http://album.musclebeaver.site",
+                "http://localhost:3000",    // 로컬 개발용
+                "https://localhost:3000"    // (로컬에서 https 쓰는 경우)
+        )); // React URL
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization")); // ✅ Authorization 헤더를 클라이언트에서 읽을 수 있도록 추가!
