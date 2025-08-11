@@ -28,7 +28,7 @@ EXPOSE 8080
 
 # Actuator를 아직 안 쓰고 있으므로 루트( / )로 헬스체크
 # (만약 actuator 추가하면 /actuator/health 로 바꾸세요)
-HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
-  CMD curl -fsS http://127.0.0.1:8080/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 ENTRYPOINT ["java","-jar","/app/app.jar"]
