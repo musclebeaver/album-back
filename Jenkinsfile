@@ -14,10 +14,7 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '20'))
   }
 
-  triggers {
-    // 깃허브 웹훅을 쓰면 잡 설정에서 "GitHub hook trigger for GITScm polling" 체크
-    // pollSCM('H/5 * * * *') // (옵션) 폴링 사용 시
-  }
+
 
   stages {
     stage('Checkout') {
