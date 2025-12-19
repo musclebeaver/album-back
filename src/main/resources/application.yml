@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: album-backend
+  output:
+    ansi:
+      enabled: ALWAYS
+  # 파일 업로드 용량 제한
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 20MB
+
+  # 기본 프로파일 설정 (IntelliJ에서 실행하면 자동으로 local 적용)
+  profiles:
+    active: local
+
+  # JPA 공통 설정
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect

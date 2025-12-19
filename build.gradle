@@ -37,6 +37,9 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'  // JWT 구현
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'  // Jackson 지원
 	implementation 'net.coobird:thumbnailator:0.4.20'
+
+	// ✅ AWS S3 연동을 위한 라이브러리 추가 (Spring Boot 3.x 호환)
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1'
 }
 
 tasks.named('test') {

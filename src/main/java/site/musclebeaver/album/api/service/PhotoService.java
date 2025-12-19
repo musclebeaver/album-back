@@ -1,22 +1,25 @@
 package site.musclebeaver.album.api.service;
 
+import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import site.musclebeaver.album.api.entity.Folder;
 import site.musclebeaver.album.api.entity.Photo;
+import site.musclebeaver.album.api.entity.UserEntity;
 import site.musclebeaver.album.api.repository.FolderRepository;
 import site.musclebeaver.album.api.repository.PhotoRepository;
-import site.musclebeaver.album.api.entity.UserEntity;
-import net.coobird.thumbnailator.Thumbnails;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 
-import java.io.File;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,13 +31,16 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final FolderRepository folderRepository;
 
-    @Value("${album.upload-dir}")
-    private String uploadDir;
+    // ✅ S3 작업을 도와주는 템플릿 주입
+    private final S3Template s3Template;
+
+    @Value("${spring.cloud.aws.s3.bucket}")
+    private String bucketName;
 
     @Value("${album.access-url}")
     private String accessUrl;
 
-    // ✅ 폴더의 사진 조회 (소유자 확인)
+    // 폴더의 사진 조회 (기존 유지)
     public Page<Photo> getPhotosByFolderId(Long folderId, UserEntity user, Pageable pageable) {
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("Folder not found"));
@@ -43,9 +49,10 @@ public class PhotoService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        return photoRepository.findByFolderAndFolderUser(folder, user, pageable); // ✅ 메서드명 변경
+        return photoRepository.findByFolderAndFolderUser(folder, user, pageable);
     }
-    // ✅ 사진 업로드 (단건)
+
+    // ✅ 사진 업로드 (단건) - S3 적용
     public Photo savePhoto(String title, String description, Long folderId, MultipartFile file, UserEntity user) throws IOException {
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("Folder not found"));
@@ -54,17 +61,20 @@ public class PhotoService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        // 유저ID/폴더ID 디렉토리 생성
-        File folderDir = new File(uploadDir + File.separator + user.getId() + File.separator + folder.getId());
-        if (!folderDir.exists()) folderDir.mkdirs();
+        // 1. S3에 저장될 파일 Key(경로+파일명) 생성
+        // 예: 1/10/uuid_filename.jpg (유저ID/폴더ID/파일명)
+        String originalFilename = file.getOriginalFilename();
+        String uuid = UUID.randomUUID().toString();
+        String s3Key = user.getId() + "/" + folder.getId() + "/" + uuid + "_" + originalFilename;
 
-        // 파일명 생성
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        String filePath = folderDir.getPath() + File.separator + fileName;
-        file.transferTo(new File(filePath));
+        // 2. S3 업로드
+        try (InputStream inputStream = file.getInputStream()) {
+            s3Template.upload(bucketName, s3Key, inputStream);
+        }
 
-        // 접근 URL
-        String imageUrl = accessUrl + user.getId() + "/" + folder.getId() + "/" + fileName;
+        // 3. 접근 URL 구성
+        // accessUrl이 "https://cloudfront.net/" 이라면 -> https://cloudfront.net/1/10/xxxx.jpg
+        String imageUrl = accessUrl + s3Key;
 
         Photo photo = new Photo();
         photo.setTitle(title);
@@ -75,9 +85,7 @@ public class PhotoService {
         return photoRepository.save(photo);
     }
 
-
-
-    // ✅ 사진 업로드 (다건) - 유효성 검사 추가
+    // ✅ 사진 업로드 (다건) - S3 + 리사이징 적용
     public List<Photo> saveMultiplePhotos(Long folderId, List<MultipartFile> files, UserEntity user) throws IOException {
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("Folder not found"));
@@ -86,41 +94,40 @@ public class PhotoService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        File folderDir = new File(uploadDir + File.separator + user.getId() + File.separator + folder.getId());
-        if (!folderDir.exists()) folderDir.mkdirs();
-
         List<Photo> savedPhotos = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            // ✅ 유효성 검사 (확장자 + MIME + 비어있는지)
             if (!isValidImageFile(file)) {
                 throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다: " + file.getOriginalFilename());
             }
 
-            // ✅ 용량 제한: 5MB 초과 금지
             if (file.getSize() > (5 * 1024 * 1024)) {
                 throw new IllegalArgumentException("5MB 이하 파일만 업로드 가능합니다: " + file.getOriginalFilename());
             }
 
-            // ✅ 확장자 제거
-            String originalName = file.getOriginalFilename(); // 예: image.png
+            String originalName = file.getOriginalFilename();
             String baseName = originalName != null ? originalName.substring(0, originalName.lastIndexOf(".")) : "image";
             String uuid = UUID.randomUUID().toString();
-            String newFileName = uuid + "_" + baseName + ".jpg"; // ✅ 확장자 강제 .jpg
 
-            String filePath = folderDir.getPath() + File.separator + newFileName;
+            // 확장자 강제 .jpg (리사이징 후 jpg로 변환하므로)
+            String s3Key = user.getId() + "/" + folder.getId() + "/" + uuid + "_" + baseName + ".jpg";
 
-            // ✅ 리사이징: 1024x1024 이하로 축소
+            // ✅ 리사이징 로직 변경 (File -> ByteArrayOutputStream)
             BufferedImage originalImage = ImageIO.read(file.getInputStream());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+
             Thumbnails.of(originalImage)
                     .size(1024, 1024)
-                    .outputFormat("jpg") // 원본 형식 유지하려면 확장자 추출해서 처리
-                    .toFile(filePath);
+                    .outputFormat("jpg")
+                    .toOutputStream(os); // 메모리에 씀
 
-            // ✅ 이미지 접근 URL 구성
-            String imageUrl = accessUrl + user.getId() + "/" + folder.getId() + "/" + newFileName;
+            // ✅ S3 업로드
+            try (InputStream is = new ByteArrayInputStream(os.toByteArray())) {
+                s3Template.upload(bucketName, s3Key, is);
+            }
 
-            // ✅ DB 저장
+            String imageUrl = accessUrl + s3Key;
+
             Photo photo = new Photo();
             photo.setTitle(originalName);
             photo.setDescription("Resized on upload");
@@ -133,50 +140,37 @@ public class PhotoService {
         return savedPhotos;
     }
 
-    // ✅ 사진 삭제
+    // ✅ 사진 삭제 - S3 적용
     public void deletePhoto(Long id, UserEntity user) {
         Photo photo = photoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found with id: " + id));
 
-        // 소유자 검증
         if (!photo.getFolder().getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        // ✅ 물리적 파일 경로 계산
-        String imageUrl = photo.getImageUrl(); // 예: http://localhost:8081/img/11/43/xxx.jpg
-        String relativePath = imageUrl.replace(accessUrl, ""); // 예: 11/43/xxx.jpg
-        File file = new File(uploadDir, relativePath); // uploadDir + 11/43/xxx.jpg
+        // 1. URL에서 S3 Key 추출
+        // DB에 저장된 URL: https://내버킷.../1/10/xxx.jpg
+        // accessUrl: https://내버킷.../
+        // 결과 s3Key: 1/10/xxx.jpg
+        String imageUrl = photo.getImageUrl();
+        String s3Key = imageUrl.replace(accessUrl, "");
 
-        // ✅ 실제 파일 존재 시 삭제
-        if (file.exists() && file.isFile()) {
-            boolean deleted = file.delete();
-            if (!deleted) {
-                System.err.println("❌ 파일 삭제 실패: " + file.getAbsolutePath());
-            }
-        } else {
-            System.err.println("⚠️ 파일이 존재하지 않음: " + file.getAbsolutePath());
-        }
+        // 2. S3에서 파일 삭제
+        s3Template.deleteObject(bucketName, s3Key);
 
-        // ✅ DB에서 레코드 삭제
+        // 3. DB 삭제
         photoRepository.deleteById(id);
     }
 
-
     private boolean isValidImageFile(MultipartFile file) {
         if (file == null || file.isEmpty()) return false;
-
         String originalName = file.getOriginalFilename();
         String contentType = file.getContentType();
-
-        // 허용 확장자
         boolean hasValidExtension = originalName != null &&
                 originalName.toLowerCase().matches(".*\\.(jpg|jpeg|png|gif|bmp|webp)$");
-
-        // 허용 MIME 타입
         boolean hasValidMimeType = contentType != null &&
                 contentType.toLowerCase().matches("image/(jpeg|png|gif|bmp|webp)");
-
         return hasValidExtension && hasValidMimeType;
     }
 }

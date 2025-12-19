@@ -96,8 +96,10 @@ public class SecurityConfig {
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                "https://album.musclebeaver.site",
-                "http://album.musclebeaver.site",
+                "https://album.beaverdeveloper.site",
+                "http://album.beaverdeveloper.site",
+                "https://d2qmxycqlntjqd.cloudfront.net",
+                "http://d2qmxycqlntjqd.cloudfront.net",
                 "http://localhost:3000",    // 로컬 개발용
                 "https://localhost:3000"    // (로컬에서 https 쓰는 경우)
         )); // React URL
