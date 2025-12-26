@@ -12,7 +12,7 @@ import site.musclebeaver.album.api.entity.UserEntity;
 import site.musclebeaver.album.api.service.UserService;
 
 @RestController
-@RequestMapping("/admin/users")
+@RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
 public class AdminUserController {
 

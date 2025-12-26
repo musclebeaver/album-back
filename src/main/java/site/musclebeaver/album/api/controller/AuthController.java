@@ -2,7 +2,11 @@ package site.musclebeaver.album.api.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import site.musclebeaver.album.api.dto.ChangePasswordRequestDto;
 import site.musclebeaver.album.api.dto.UserResponseDto;
@@ -11,7 +15,9 @@ import site.musclebeaver.album.security.CustomUserDetails;
 import site.musclebeaver.album.security.util.JwtTokenProvider;
 import site.musclebeaver.album.api.service.UserService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,11 +32,12 @@ public class AuthController {
         this.userService = userService;
     }
 
-    // ✅ Refresh 토큰으로 Access 토큰 재발급
+    // ✅ Refresh 토큰으로 Access 토큰 재발급 (수정됨!)
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
 
+        // 토큰 유효성 검사
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Invalid Refresh Token");
@@ -39,7 +46,19 @@ public class AuthController {
 
         return userService.findByRefreshToken(refreshToken)
                 .map(user -> {
-                    String newAccessToken = jwtTokenProvider.generateAccessToken(user.getUsername());
+                    // 1. 유저 권한 목록 수동 생성 (DB에 저장된 정보 기반)
+                    List<GrantedAuthority> authorities = new ArrayList<>();
+                    authorities.add(new SimpleGrantedAuthority("ROLE_USER")); // 기본 권한
+
+                    if (user.isAdmin()) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN")); // 관리자 권한
+                    }
+
+                    // ✅ [수정 후] CustomUserDetails 객체를 만들어서 넣어야 함!
+                    CustomUserDetails customUserDetails = new CustomUserDetails(user);
+                    Authentication authentication = new UsernamePasswordAuthenticationToken(customUserDetails, null, authorities);
+
+                    String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
 
                     Map<String, String> response = new HashMap<>();
                     response.put("accessToken", newAccessToken);
@@ -68,7 +87,6 @@ public class AuthController {
         return ResponseEntity.ok(dto);
     }
 
-
     // ✅ 비밀번호 변경
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(
@@ -85,6 +103,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 변경 중 오류가 발생했습니다.");
         }
     }
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
@@ -99,5 +118,4 @@ public class AuthController {
 
         return ResponseEntity.ok("로그아웃 성공");
     }
-
 }

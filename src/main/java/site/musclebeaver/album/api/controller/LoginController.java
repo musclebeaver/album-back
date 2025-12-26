@@ -66,8 +66,8 @@ public class LoginController {
             }
 
             userService.resetFailedLoginCount(userEntity);
-
-            String accessToken = jwtTokenProvider.generateAccessToken(userDetails.getUsername());
+            // (이제 토큰 안에 ROLE_ADMIN 같은 권한 정보가 들어갑니다)
+            String accessToken = jwtTokenProvider.generateAccessToken(authentication);
             String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails.getUsername());
             userService.updateRefreshToken(userDetails.getUsername(), refreshToken);
 

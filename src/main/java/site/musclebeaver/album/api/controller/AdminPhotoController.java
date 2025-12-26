@@ -11,7 +11,7 @@ import site.musclebeaver.album.api.service.UserService;
 import site.musclebeaver.album.api.entity.UserEntity;
 
 @RestController
-@RequestMapping("/admin/photos")
+@RequestMapping("/api/admin/photos")
 @RequiredArgsConstructor
 public class AdminPhotoController {
 

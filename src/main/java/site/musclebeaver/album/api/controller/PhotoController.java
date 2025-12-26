@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/photos")
+@RequestMapping("/api/photos")
 @RequiredArgsConstructor
 public class PhotoController {
 

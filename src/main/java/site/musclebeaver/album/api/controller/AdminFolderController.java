@@ -14,7 +14,7 @@ import site.musclebeaver.album.api.entity.UserEntity;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/folders")
+@RequestMapping("/api/admin/folders")
 @RequiredArgsConstructor
 public class AdminFolderController {
 

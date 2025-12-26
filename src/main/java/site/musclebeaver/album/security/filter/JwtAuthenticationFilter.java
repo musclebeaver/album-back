@@ -46,18 +46,25 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException, ServletException {
+
         UserDetails userDetails = (UserDetails) authResult.getPrincipal();
         String username = userDetails.getUsername();
 
-        // ✅ AccessToken, RefreshToken 각각 생성
-        String accessToken = jwtTokenProvider.generateAccessToken(username);
+        // ❌ [수정 전] 에러 발생 (String을 넣어서 문제)
+        // String accessToken = jwtTokenProvider.generateAccessToken(username);
+
+        // ✅ [수정 후] Authentication 객체(authResult)를 통째로 넘김!
+        // (이제 Provider가 여기서 권한 정보를 꺼내서 토큰에 넣습니다)
+        String accessToken = jwtTokenProvider.generateAccessToken(authResult);
+
+        // Refresh Token은 그대로 username을 사용 (권한 정보 불필요)
         String refreshToken = jwtTokenProvider.generateRefreshToken(username);
 
         // ✅ JSON으로 응답 보내기
         Map<String, Object> tokenResponse = new HashMap<>();
         tokenResponse.put("accessToken", accessToken);
         tokenResponse.put("refreshToken", refreshToken);
-        tokenResponse.put("userId", username); // username 또는 userId 필요하면 추가
+        tokenResponse.put("userId", username);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
